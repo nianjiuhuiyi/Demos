@@ -2,4 +2,5 @@
 - 02GAMES101_Homework：这是GAMES101，B站图形学留的课后练习题，没有自己做，太难了，做不来，里面有：
   - eigen库的使用；
   - 作业7中的多线程的使用；
+- [03OpenGL_Game](./03OpenGL_Game/README.md)：这是learnOpenGL的实战breakout游戏demo的代码及相关资源，我写成CmakeLists的形式了，应该是可以直接用nmake编译来在win上运行的。阿里云盘里也有编译好的demo可以直接运行。
 

@@ -1,0 +1,59 @@
+cmake_minimum_required(VERSION 3.1)
+project(BREKOUT_GAME)
+
+set(NAME breakout)
+# Enable C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+
+set(CMAKE_BUILD_TYPE Release)
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message("Setting build type to 'Release' as none was specified.")
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+# 自己的头文件
+include_directories(${CMAKE_SOURCE_DIR}/include)
+# 各个三方库库的头文件路径
+set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdparty)
+include_directories(${INCLUDE_DIR}/freetype-2.12.1)
+include_directories(${INCLUDE_DIR}/glad)
+include_directories(${INCLUDE_DIR}/glfw-3.3.7-vc2017)
+include_directories(${INCLUDE_DIR}/glm)
+include_directories(${INCLUDE_DIR}/irrKlang-64bit-1.6.0)
+include_directories(${INCLUDE_DIR}/stb_image)
+
+# 库路径
+link_directories(${CMAKE_SOURCE_DIR}/lib)
+set(LIBS irrKlang.lib glfw3.lib freetyped.lib) 
+
+
+aux_source_directory(src SRC)  # 这俩是一个效果，默认开始路径就是${CMAKE_SOURCE_DIR}
+#aux_source_directory(${CMAKE_SOURCE_DIR}/src SRC)
+
+add_executable(${NAME} ${SRC})
+target_link_libraries(${NAME} ${LIBS})
+
+# ****************************** install ***************************************
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    message(STATUS "Setting default CMAKE_INSTALL_PREFIX path to ${CMAKE_BINARY_DIR}/install")
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE STRING "The path to use for make install" FORCE)
+endif()
+
+install(TARGETS ${NAME} DESTINATION .)  # 1.1 执行文件(用的TARGETS)
+ 
+file(GLOB DLLS "dlls/*.dll")    # 1.2 也可以写作  "${CMAKE_SOURCE_DIR}/dlls/*.dll"
+install(PROGRAMS ${DLLS} DESTINATION .)  # PROGRAMS 指的是非目标文件的可执行程序
+
+install(DIRECTORY "resources" DESTINATION .)   # 1.3 文件夹就要用 DIRECTORY ，前面 resources 目录加不加引号都一样
+
+
+
+# 不能下面这样写，是错的，不同的文件用不一样的 TARGETS、PROGRAMS、FILE、DIRECTORY 
+# install(TARGETS "${CMAKE_SOURCE_DIR}/dlls/*.dll" .)  # 动态库和执行文件放一起
+# install(TARGETS "${CMAKE_SOURCE_DIR}/resources" DESTINATION resources)  # 资源文件
+
+
+

@@ -13,9 +13,11 @@
 
 
 
-下面是关于**pyaudio**的一些基本使用：
+下面是关于**pyaudio**的一些基本使用，还有之前**树莓派**使用pyaudio的一些记录。
 
-### 1.1 获取设备信息
+## 一、pyaduio
+
+### 1.1. 获取设备信息
 
 ```python
 import pyaudio
@@ -24,7 +26,7 @@ for i in range(p.get_device_count()):
 	print(p.get_device_info_by_index(i), "\n")
 ```
 
-### 1.2 录音demo
+### 1.2. 录音demo
 
 ​	在音频处理中，**chunk**（也称为帧）是指音频信号中的一小段连续采样数据。每个chunk通常包含几毫秒到几百毫秒的音频数据，具体取决于采样率和帧率。在数字音频中，chunk是数字信号的基本单位，它们被用于压缩、存储、传输和处理音频数据。在音频处理中，通常需要对每个chunk进行分析、处理或转换，以实现各种音频效果和功能。
 
@@ -186,7 +188,7 @@ while True:
 - 16行传入的参数：“dtype”、“count”是计算得来的，是从“pyAudioAnalysis”库读取音频文件中去一步步debug，看它读取音频文件时这俩参数是啥得来的。（所以时间长了你一定记不住这怎么来的了，但不重要，不要去多想，等后续再用得到的时候，再去分析debug一次，也是很快的）
   - 但对于这次来说，单声道，两秒，dtype='<i2', count=88064  作为参考。
 
-### 1.4 播放demo
+### 1.4. 播放demo
 
 当需要在执行其他程序时同时播放音频，可以使用回调的方式播放,[地址参考](https://cloud.tencent.com/developer/article/1451526?from=15425)，示例代码如下：
 
@@ -276,3 +278,81 @@ def play_audio_callback(wave_path):
 play_audio_callback("output.wav")
 ```
 
+## 二、树莓派
+
+树莓派音频录制参考：[1](https://www.ngui.cc/zz/2340381.html?action=onClick)、[2](https://blog.csdn.net/Tang_Chuanlin/article/details/86775881)、[3](https://www.cnblogs.com/lbzbky/articles/16731899.html)、[查看设备](https://blog.csdn.net/m0_38055352/article/details/88756589)。
+
+关于运行后，Alsa库相关的一些日志信息的参考文档，[1](https://stackoverflow.com/questions/46946788/alsa-lib-conf-c4528-snd-config-evaluate-function-snd-func-refer-returned-err)、[2](https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time)、[3](https://github.com/sickcodes/Docker-OSX/issues/223)。只能说暂时不影响，是可以正常录音下来的。
+
+### 2.1. 树莓派远程
+
+官方[远程桌面](https://pinggy.io/blog/iot_remote_desktop_raspberry_pi/)教程。也可以试试[NoMachine](https://www.nomachine.com/)。
+
+### 2.2. 安装pyaudio库
+
+安装遇到的问题：
+
+​	树莓派上安装pyaudio失败(pip install pyaudio)，出现报错：“src/pyaudio/device_api.c:9:10: fatal error: portaudio.h: 没有那个文件或目录。ERROR: Failed building wheel for pyaudio”
+
+
+
+解决办法：pyaudio是python的模块，在树莓派下安装pyaudio  
+
+- 首先需安装portaudio.dev： sudo apt-get install portaudio.dev
+- 注意：若是python3：sudo apt-get install python3-pyaudio
+
+这执行完后就安装好了，不用再pip install了。
+
+### 2.3. 遇到的问题
+
+1、使用pyaudio时，win上可以跑的代码，在树莓派上报错“OSError: [Errno -9981] Input overflowed”，解决办法：给读流时的read函数加一个参数，即：
+
+从`data = stream.read(CHUNK)`变成`data = stream.read(CHUNK, exception_on_overflow=False)`,这个参数默认是True，若提示参数错误，记得卸载掉去升级。
+
+## 三、其它音频理论
+
+下面的内容是看到音频群里的讨论，以及gpt的回答，并未去做验证。
+
+gpt的回答：关于音频去噪
+
+1. pydub库：
+   - pydub库是一个处理音频文件的库，它可以用于加载、处理和保存音频文件，包括去噪操作。
+   - 它可以结合其他Python音频处理库，如`scipy`和'numpy "来进行去噪操作。
+
+2. noisereduce:
+   - noisereduce是一个专门用于语音信号去噪的Python库，基于Wiener滤波器的算法实现。
+   - 使用noisereduce库，您可以很方便地对语音信号进行去噪操作，降低噪音干扰。
+3. librosa:
+   - librosa是一个广泛用于音频处理和分析的Python库，它提供了许多音频特征提取和处理的功能，包括去噪。
+   - 在librosa中，您可以使用不同的方法和工具来进行语音去噪。
+4. spectralgate:
+   - spectralgate是一个基于谱门限的语音去噪库，它可以根据语音信号的频谱特性来去除噪音。
+   - 它是基于Python的一个开源库，适用于语音信号的实时去噪和处理。
+
+请注意，去噪是一个复杂的任务，效果受到许多因素的影响，例如噪音类型、信噪比、声音特性等。不同的去噪库可能适用于不同的场景，效果也可能有所不同。建议根据您的具体需求和数据来选择合适的库，并进行实际测试和调整以获得最佳效果。
+
+---
+
+其他人回答：（都是开源的）
+
+- dtln，开源算法，效果还不错，而且可以实时；
+
+- dccrn非实时，效果比dtln好；
+
+- 还有dpcrn；
+
+- 实时要求极高的话，rnnoise，速度很快，效果有些差；
+
+- rnnnoise里面很多c代码。
+
+  ---
+
+- 我看这些算法基本是先进行傅里叶变换，减去噪声分量后逆变换得到处理后的音频。
+
+- 先做stft得到频谱，然后有的直接用频谱，有的进一步转成梅尔频谱或者MFCC。网络推理完之后再进行逆变换。
+
+- DCCRN和DPCRN是类似unet的结构，DTLN是LSTM堆叠。
+
+- 唔，那这些方法应该都会对音频进行切片，然后再处理。另一个回答道：不叫切片，stft是分帧、加窗、fft，分帧一般是8ms-40ms左右的大小，加窗是为了防止“旁瓣泄露”，一般用汉宁窗之类的，你去看看stft的原理就知道了，如果不加窗，就会出现电流声，我试过。
+
+- 是滴，语音太短了一般都用不着切片，在处理音乐和电影音轨时一般才切片处理，大多数时候都是3s一个片段比较常见。
